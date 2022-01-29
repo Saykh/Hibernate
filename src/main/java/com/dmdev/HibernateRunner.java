@@ -1,6 +1,8 @@
 package com.dmdev;
 
 
+import com.dmdev.converter.BirthdayConverter;
+import com.dmdev.entity.Birthday;
 import com.dmdev.entity.Role;
 import com.dmdev.entity.User;
 import org.hibernate.Session;
@@ -22,6 +24,8 @@ public class HibernateRunner {
 
         configuration.setPhysicalNamingStrategy(new CamelCaseToUnderscoresNamingStrategy());
 
+        configuration.addAttributeConverter(BirthdayConverter.class, true);
+
         try (SessionFactory sessionFactory = configuration.buildSessionFactory();
              Session session = sessionFactory.openSession()) {
 
@@ -31,8 +35,7 @@ public class HibernateRunner {
                     .username("edilov_st@mail.ru")
                     .firstname("Saykhan")
                     .lastname("Edilov")
-                    .birthDate(LocalDate.of(1994,7,23))
-                    .age(27)
+                    .birthDate(new Birthday(LocalDate.of(1994,7,23)))
                     .role(Role.ADMIN)
                     .build();
 

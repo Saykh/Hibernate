@@ -3,12 +3,11 @@
 Например, как под капотом работает преобразование LocalDate (Java) в Date (SQL)? В случае с
 JDBC мы делали это вручную. Ведь, например, в preparedStatement из JDBC мы не можем передать,
 например, LocalDate тип.
-В Hibernate же в классе Configuration есть List<BasicTypes> - список всех типов,
-который поддерживает Hibernate,и он может поддерживать один тип в другой.
-И этот интерфейс BasicType наследуется от Type - самый главный интерфейс для всех типов в
-Hibernate. И у него есть реализации StringType, IntegerType, LocalDateType, TimeStampTime,
-ManyToOne, CollectionType и т.д.
-- все эти типы поддерживает Hibernate и он может преобразовывать один в другой.
+В Hibernate же в классе Configuration есть List<BasicTypes> - список всех типов, который поддерживает
+Hibernate,и он может поддерживать один тип в другой.
+И этот интерфейс BasicType наследуется от Type - самый главный интерфейс для всех типов в Hibernate.
+И у него есть реализации StringType, IntegerType, LocalDateType, TimeStampTime, ManyToOne, CollectionType
+и т.д. - все эти типы поддерживает Hibernate и он может преобразовывать  один в другой.
 И мы не можем придумать свой тип и без доп кода добиться, чтобы, например, Hibernate преобразовал
 в соответствующий SQL тип.
 
@@ -21,11 +20,11 @@ Enum и Hibernate будет преобразовывать их в соотве
 
 Как мы знаем, Enum наследуется от базового класса Enum, который содержит в себе поля name и ordinal.
 Ordinal не так круто использовать, ведь если изменится порядок в Enum, то в БД придется делать update.
+Да и в БД это не красиво выглядит - числовое представление.
 
 По умолчанию стоит использование Ordinal, поэтому для изменениня на строковое представление мы используем
-аннотацию @Enumerated(EnumType.STRING) и меняем представление.
+аннотацию @Enumerated(EnumType.STRING) и меняем представление на строковое.
 
 @Enumerated(EnumType.STRING)
 private Role role;
-
 

@@ -1,12 +1,12 @@
 package com.dmdev.entity;
 
+import com.dmdev.converter.BirthdayConverter;
 import lombok.AllArgsConstructor;
 import lombok.Builder;
 import lombok.Data;
 import lombok.NoArgsConstructor;
 
 import javax.persistence.*;
-import java.time.LocalDate;
 
 
 @Entity
@@ -24,10 +24,10 @@ public class User {
 
     private String lastname;
 
+    @Convert(converter = BirthdayConverter.class)
     @Column(name = "birth_date")
-    private LocalDate birthDate;
+    private Birthday birthDate;
 
-    private Integer age;
 
     @Enumerated(EnumType.STRING)
     private Role role;

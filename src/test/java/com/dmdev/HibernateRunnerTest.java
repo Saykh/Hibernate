@@ -1,5 +1,6 @@
 package com.dmdev;
 
+import com.dmdev.entity.Birthday;
 import com.dmdev.entity.User;
 import org.junit.jupiter.api.Test;
 
@@ -23,8 +24,7 @@ class HibernateRunnerTest {
                 .username("edilov_st@mail.ru")
                 .firstname("Saykhan")
                 .lastname("Edilov")
-                .birthDate(LocalDate.of(1994,7,23))
-                .age(27)
+                .birthDate(new Birthday(LocalDate.of(1994,7,23)))
                 .build();
 
         String SQL = """
