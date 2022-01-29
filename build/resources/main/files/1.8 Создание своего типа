@@ -1,0 +1,59 @@
+1.8 Написание своего типа
+
+На прошлой лекции мы узнали, как Hibernate преобразует Java типы в SQL типы и наоборот, используя соответствующие
+реализации интерфейса Type, которые есть на все случаи жизни. Но всё же, как написать свой тип и использовать
+его в качестве полей в сущности. И тут у нас есть два пути:
+
+1. написать свою реализацию, реализовав интерфейс Type или UserType.
+2. написать свой конвертор
+
+И для последнего есть класс, который имплементит интерфейс Type - AttributeConverter.
+Нам нужно написать свой конвертор и реализовать данный интерфейс.
+
+
+public class BirthdayConverter implements AttributeConverter<BirthDay, Date> {
+
+
+    @Override
+    public Date convertToDatabaseColumn(BirthDay attribute) {
+        return Optional.ofNullable(attribute)
+                .map(BirthDay::birthDate)
+                .map(Date::valueOf)
+                .orElse(null);
+    }
+
+    @Override
+    public BirthDay convertToEntityAttribute(Date dbData) {
+        return Optional.ofNullable(dbData)
+                .map(Date::toLocalDate)
+                .map(BirthDay::new)
+                .orElse(null);
+    }
+}
+
+
+public record BirthDay(LocalDate birthDate) {
+
+    public long getAge() {
+        return ChronoUnit.YEARS.between(birthDate,LocalDate.now());
+    }
+}
+
+
+
+@Convert(converter = BirthdayConverter.class) -> Говорим Hibernate, что нужно использовать именно этот конвертор для преобразования в Birthday и наоборот в
+Java SQL Date.
+
+@Convert(converter = BirthdayConverter.class)
+@Column(name = "birth_date")
+private BirthDay birthDate;
+
+
+Чтобы Hibernate автоматом использовал этот конвертор, когда видит Birthday в любой из нашей сущности, чтобы
+каждый раз не ставит аннотацию над полем в сущности, можно:
+
+1. или -> configuration.addAttributeConverter(BirthdayConverter.class, true);
+2. или ->
+
+@Converter(autoApply = true)
+public class BirthdayConverter implements AttributeConverter<Birthday, Date> {
