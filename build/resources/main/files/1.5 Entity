@@ -1,0 +1,133 @@
+1.5 Entity
+
+Предыдущую лекцию мы закончили, сказав:
+
+Точнее это более сложные обёртки в Hibernate, упрощающие работу с ORM.
+
+Так вот для ORM нам нужны Entity, которые мы будем проецировать на таблицу в БД. То есть будет заниматься
+мапингом ООМ в РМ и наоборот.
+
+Чтобы класс стал ENTITY, данная сущность должна быть POJO (Plain Old Java object), а для этого должны быть
+соблюдены следующие условия:
+
+    1) Entity класс должен быть помечен аннотацией Entity или описан в XML файле.
+
+    2) Entity класс должен быть классом верхнего уровня (top-level class).
+
+    3) Entity класс не может быть enum или интерфейсом.
+
+    4) Поля Entity класс должны быть напрямую доступны только методам самого Entity класса и не должны быть
+    напрямую доступны другим классам, использующим этот Entity. Такие классы должны обращаться только к методам
+    (getter/setter методам или другим методам бизнес-логики в Entity классе
+
+    5) Entity класс не может содержать финальные поля или методы, если они участвуют в маппинге.
+
+    6) Entity класс должен содержать первичный ключ, то есть атрибут или группу атрибутов которые уникально
+    определяют запись этого Entity класса в базе данных.
+
+    7) Если объект Entity класса будет передаваться по значению как отдельный объект (detached object),
+    например через удаленный интерфейс (through a remote interface), он так же должен реализовывать Serializable
+    интерфейс.
+
+    8) Сущность не должна быть immutable, то есть сам класс и его поля не могут быть final, ведь Hibernate
+    меняет их в своем жизненном цикле, а класс не может быть final потому, что Hibernate работает с прокси, и этот
+    прокси работает по принципу CGLIB, то есть создаёт наследника от нашего класса.
+
+    9) Обязательно должен быть public или protected конструктор без параметров, ибо Hibernate использует
+    REFLECTION API для создания сущностей и последующей инициализации полей через сеттеры или напрямую через
+    REFLECTION API.
+
+
+    @Entity -> из JPA. Мы говорим, что это сущность Entity.
+    Теперь она требует ID, ведь он должен быть у каждого Entity. И этот ID должен реализовывать интерфейс
+    Serializable. Поговорим об этом позже.
+
+    @Id -> указываем, что поле ID.
+
+    @Table(name = "users") -> у нас название класса отличается от названия таблицы, поэтому используем эту аннотацию.
+
+
+    private LocalDate birthDate; А в таблице у нас столбец birth_date. Как добиться того, чтобы у нас ->
+    CamelCaseToUnderscores. Два варианта:
+
+    1. configuration.setPhysicalNamingStrategy(new CamelCaseToUnderscoresNamingStrategy());
+
+    2. @Column(name = "birth_date")
+       private LocalDate birthDate;
+
+
+    @Entity
+    @Data
+    @AllArgsConstructor
+    @NoArgsConstructor
+    @Builder
+    @Table(name = "users")
+    public class User {
+
+        @Id
+        private String username;
+
+        private String firstname;
+
+        private String lastname;
+
+        @Column(name = "birth_date")
+        private LocalDate birthDate;
+
+        private Integer age;
+
+
+    }
+
+
+
+    Создали сущность. Теперь попробуем её сохранить.
+
+    Сначала нужно добавить эту сущность в SessionFactory, чтобы Hibernate отслеживал её. Для этого у нас есть 2
+    варианта:
+
+    1. configuration.addAnnotatedClass(User.class);
+
+    2. В hibernate.cng.xml указать: <mapping class="com.dmdev.entity.User"/>
+
+
+    Чтобы отправлять запросы в БД, мы должны открывать транзакцию и закрывать.
+    Если всё хорошо - commit, плохо - rollback.
+
+     public static void main(String[] args) {
+
+
+            Configuration configuration = new Configuration();
+            configuration.configure();
+
+            configuration.addAnnotatedClass(User.class);
+            configuration.setPhysicalNamingStrategy(new CamelCaseToUnderscoresNamingStrategy());
+
+
+            try (SessionFactory sessionFactory = configuration.buildSessionFactory();
+                 Session session = sessionFactory.openSession()) {
+
+                session.beginTransaction();
+
+                User user = User.builder()
+                        .username("edilov_st@mail.ru")
+                        .firstname("Saykhan")
+                        .lastname("Edilov")
+                        .birthDate(LocalDate.of(1994,7,23))
+                        .age(27)
+                        .build();
+
+
+                session.save(user);
+
+                session.getTransaction().commit();
+
+            }
+
+        }
+
+User успешно сохранен. Как это работает? Как под капотом формируются SQL запросы?
+Мы ведь сами не писали SQL запрос.
+
+
+

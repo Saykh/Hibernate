@@ -1,0 +1,37 @@
+1.4 SessionFactory
+
+1. Создаем hibernate.cng.xml - конфигурационный файл. Его главная задача задать SessionFactory.
+Задаем соотвествующие настройки.
+
+2. Создаем SessionFactory, для этого у нас есть класс Configuration, у него есть метод configure,
+который принмает путь к нашему hibernate.cng.xml. По дефолтному пути смотрит в нашем случае - то есть
+туда, где наш hibernate.cng.xml файл. Если бы лежал в другом месте, пришлось бы явно указывать.
+
+В Configuration (класс) у нас всё, что нужно для создания SF, например, стратегии именования,
+преобразования названий классов в Java в соответствующие названия таблиц, колонок в БД и т.д. Кроме
+того, там есть метаинформация -> информация о наших таблицах.
+
+Вызываем на нем метод buildSessionFactory и он вернет нам SessionFactory на основании всех полей в
+классе Configuration и плюс hibernate.cfg.xml.
+
+SessionFactory (интерфейс), как и ConnectionPool должен быть один в приложении, и мы должны его закрывать.
+Session и SessionFactory мы помещаем в try-with-resource, чтобы закрывать.
+
+SessionFactory ("аналог" ConnectionPool в JDBC) — это фабрика для объектов Session. Обычно создается
+во время запуска приложения и сохраняется для последующего использования. Является потокобезопасным
+объектом и используется всеми потоками приложения.
+
+Session ("аналог" Connection в JDBC) - обеспечивает физическое соединение между приложением и БД.
+Основная функция - предлагать DML-операции для экземпляров сущностей.
+
+
+Точнее это более сложные обёртки в Hibernate, упрощающие работу с ORM.
+
+ Configuration configuration = new Configuration();
+        configuration.configure();
+
+        try (SessionFactory sessionFactory = configuration.buildSessionFactory();
+             Session session = sessionFactory.openSession()) {
+
+            System.out.println("Ok");
+        }
