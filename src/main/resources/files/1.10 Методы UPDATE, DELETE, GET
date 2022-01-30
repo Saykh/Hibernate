@@ -1,4 +1,4 @@
-1.10 Методы UPDATE и DELETE
+1.10 Методы UPDATE, DELETE, GET
 
 Вернемся к нашему объекту Session и рассмотрим его методы UPDATE и DELETE. Ведь пока мы изучили
 только save.
@@ -23,4 +23,33 @@ DELETE -> удаление сущности, тоже по ID. Опять же, 
 Если удаляемой сущности нет, данный метод не бросит исключение.
 
 
+GET -> получение сущности:
+
+User userGet = session.get(User.class, "edilov_st@mail.ru");
+
+Тут два важных момента:
+
+1. Почему мы передаем ещё и сущность? Потому, что с таким идент-м могут быть разные сущности, поэтому
+уникальный ключ, по которому в сессии получаем сущность - это два поля - класс сущности и идент-р.
+
+2. Данный метод отличается от предыдущих тем, что тут происходит процесс преобразования уже из РМ в ООМ.
+Всё опять работает под капотом с помощью Reflection API. И тут важную роль играет конструктор без параметров.
+
+@Test
+    void checkGetReflectionApi() throws SQLException, NoSuchMethodException, InvocationTargetException, InstantiationException, IllegalAccessException, NoSuchFieldException {
+        PreparedStatement preparedStatement = null;
+        ResultSet resultSet = preparedStatement.executeQuery();
+        resultSet.getString("username");
+        resultSet.getString("firstname");
+        resultSet.getString("lastname");
+
+        Class<User> clazz = User.class;
+        Constructor<User> constructor = clazz.getConstructor();
+        User user = constructor.newInstance();
+        Field userNameField = clazz.getDeclaredField("username");
+        userNameField.setAccessible(true);
+        userNameField.set(user, resultSet.getString("username"));
+
+        // И так по каждому полю. Проходимся по всем полям и устанавливаем значения из ResultSet.
+    }
 
