@@ -49,7 +49,11 @@ public class HibernateRunner {
                     .build();
 
 
-            User userGet = session.get(User.class, 2L);
+            User userGet1 = session.get(User.class, "edilova_at@mail.ru");
+            // User userGet2= session.get(User.class, "edilova_at@mail.ru");
+
+            userGet1.setLastname("Edilova");
+            session.flush();
 
             session.getTransaction().commit();
 

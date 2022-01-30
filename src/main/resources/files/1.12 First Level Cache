@@ -1,0 +1,116 @@
+1.12 First Level Cache
+
+Предыдущую лекцию мы закончили словами:
+
+Теперь, зная как устроена MetaModel в SessionFactory и что каждой сущности соответствует
+EntityPersister, мы готовы перейти к рассмотрению FIRST LEVEL CACHE.
+
+То есть мы усвоили, что EntityPersister отвечает за операции над своими сущностями - преобразование
+ОММ в РМ и наоборот.
+
+И именно класс нашей сущности является ключом, по которому мы получаем из MetaModel наш
+EntityPersister.
+
+EntityPersister, как мы говорили ранее, важен в понимании того, как устроен First Level Cache.
+
+Убедимся в этом, сделав такие запросы на получение одной и той же сущности:
+
+User userGet1 = session.get(User.class, "edilova_at@mail.ru");
+User userGet2 = session.get(User.class, "edilova_at@mail.ru");
+
+Первый select запрос случился, а вот второй НЕТ, хоть мы и сделали метод get. Потому что
+это и есть cache - в Hibernate реализован механизм хэширования сущность, а значит мы реже
+ходим в БД, делая запросы. И этот кэш ещё называется First Level Cache. Он есть по умолчанию
+и его никак не отключить.
+
+Зайдем в реализацию интерфейса Session - SessionImpl. Там есть поле persistenceContext - его
+и называют FLC. Поле private transient StatefulPersistenceContext persisterContext.
+StatefulPersistenceContext реализует основной интерфейс PersistenceContext
+
+В StatefulPersistenceContext есть ссылка на сессию, которой он приндлежит. Ведь на каждую сессию есть
+свой PersistenceContext.
+Другие его основные поля - это ассоциативные массивы. Это и есть наш кэш,где по ключу EntityKey
+мы получаем значение (сущность) Object.
+
+private HashMap<EntityKey, Object> entitiesByKey;
+
+
+EntityKey включает:
+
+public final class EntityKey implements Serializable {
+
+   private final Serializable identifier;  // Идентификатор. Для реализации SLC он должен быть Serializable.
+   private final int hashCode;
+   private final EntityPersister persister; // Тот самый ответственный за операции
+
+}
+
+Смотри debug - в PersistenceContext будет лежать сущность по ключу и значению (см. выше).
+
+Следовательно, если в нашем кэше (PersistenceContext) есть сущность, нам не нужно отправлять
+запрос в БД - мы просто берём сущность из ассоциативного массива. А как он ПОПАДАЕТ ТУДА?
+
+Это происходит через вызов методов у Session - то есть только после вызова обращения к БД
+мы можем положить сущность в PersistenceContext. Save, get и т.д. (рассмотрим) - все они кладут
+сущность в PersistenceContext только после того, как сделали запрос в БД.
+
+Другими словами, PersistenceContext является проекцией на текущее состояние нашей БД, когда
+мы открыли сессию и начали делать запросы к нашей БД.
+
+А как удалить сущность из PersistenceContext?
+
+1. session.evict(user);  -> удаляем конкретную сущность.
+
+2. session.clear();      -> полностью чистим кэш, то есть по факту ассоциативные массивы.
+
+3. session.close();      -> закрытие сесси. Обычно так и происходит.
+
+
+Ещё один важный момент, связанный с PersistenceContext - вот мы получили сущность, так вот,
+дальнейшие изменения этой сущности, которая уже связана с PersistenceContext, обязательно
+отразятся на запросах в БД.
+
+Вот:
+User userGet1 = session.get(User.class, "edilova_at@mail.ru");
+userGet1.setLastname("Tutaeva");
+
+session.getTransaction().commit();
+
+Мы не сделали update, но Hibernate сделал его (см. debug). В итоге Альбина стала Тутаевой.
+Таким образом, все изменения сущностей, которые ассоциированы с нашей сессией, то есть лежат
+в PersistenceContext, отразятся в запросах в БД для того, чтобы синхронизироваться с БД. По другому
+это называется Dirty Session - тоесть когда в рамках нашей сессии мы изменяем наши сущности, которые
+ассоциированы с этой сессией,таким образом делая их dirty (грязными).
+Поэтому осторожно изменяйте сущности, которые уже лежат в PersistenceContext.
+
+Есть ещё метод flush().
+session.flush() -> сливаем состояние PersistenceContext (FLC) в БД, то есть изменения, сделанные до
+до вызова данного метода, будут слиты в БД.
+
+User userGet1 = session.get(User.class, "edilova_at@mail.ru");
+// User userGet2= session.get(User.class, "edilova_at@mail.ru");
+
+userGet1.setLastname("Edilova");
+session.flush();
+
+session.getTransaction().commit();
+
+Изменили в БД фамилию Альбины снова на Edilova.
+
+Таким образом, если говорить схематично:
+
+
+1. SessionFactory - один единственный объект на всё наше приложение.
+
+2. В SessionFactory есть MetaModel, которая строится на основании всех нашей сущностей и плюс
+все типы BasicTypes, которые мы можем добавить сами, либо добавляются по умолчанию с помощью
+Hibernate для стандартных типов данных.
+
+3. На кажду сущность, которая обязана иметь иден-р приходится EntityPersister, которые знает,
+как выполнять соответствующие запросы, например, CRUD, то есть преобразовывать ООМ в РМ.
+
+
+И в нашем SessionFactory, есть множество объектов Session. И у каждой сессии есть свой PersistenceContext (кэш).
+Это важно в понимании жизненного цикла сущности, ибо каждая сущность может быть ассоциирована с разными сессиями,
+и для каждой этой сесси будет своё состояние сущности. То есть каждая сущность может быть в PersistenceContext
+в одной сессии и не быть в другой. Следовательно состояние сущности может отличаться в каждой сесси.
