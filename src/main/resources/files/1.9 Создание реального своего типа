@@ -1,0 +1,90 @@
+1.9 Создание реального своего типа
+
+Предыдущую лекцию мы закончили словами:
+
+Вот так вот. На практике часто используют эти конверторы, чтобы самим не создавать собственные типы, реализовывая
+интерфейс Type или UserType. Это делается в случаях, когда у Hibernate нет соотвествующего BasicType.
+
+И всё же, а что если в SQL есть тип, который мы даже не знаем, как представить в виде SQL типа. На предыдущей
+лекции у нас в BirthDayConverter был SQL Date, и на основании него преобразовали свой тип, а если такого типа
+не будет в SQL, то нам придется работать с каким-то массивом байт, тут конвертором не обойтись, придется
+создать свой тип, используя интерфейс Type или UserType.
+
+Например, JSONB type. Тип, который есть в Postgres, но нет его аналогов в Java SQL типа. Значит придется
+создавать свой тип данных и преобразовывать его из массива байт.
+
+public class JsonType implements UserType {
+}
+
+Тут очень много методов, основные:
+
+  @Override
+    public Object nullSafeGet(ResultSet rs, String[] names, SharedSessionContractImplementor session, Object owner) throws HibernateException, SQLException {
+        return null;
+    }
+
+    @Override
+    public void nullSafeSet(PreparedStatement st, Object value, int index, SharedSessionContractImplementor session) throws HibernateException, SQLException {
+
+    }
+
+В первом методе мы получаем из ResultSet получаем что-то, что будет нашим Json.
+Во втором у нас есть PreparedStatement и Object (наш JSON), который мы должны установить в PreparedStatement.
+
+
+Опять же, там ещё много методов, которые нужно переопределить. Поэтому лучше использовать готовые библиотки,
+JSON типы, которых реализуют или UserType или Type, чтобы не писать всё это вручную.
+
+Так вот, нам нужно подтянуть её:
+
+implementation 'com.vladmihalcea:hibernate-types-52:2.14.0'
+
+
+@Type(type = "com.vladmihalcea.hibernate.type.json.JsonBinaryType")
+private String info;
+
+@Type -> Указали полный путь класса, который мы будем использовать в качестве типа нашего типа.
+
+Теперь регистрируем новый тип в Hibernate.
+
+configuration.registerTypeOverride(new JsonBinaryType());
+
+Сохраняем с новой информацией:
+
+ User user = User.builder()
+                    .username("edilov_st@mail.ru")
+                    .firstname("Saykhan")
+                    .lastname("Edilov")
+                    .birthDate(new Birthday(LocalDate.of(1994,7,23)))
+                    .role(Role.ADMIN)
+                    .info("""
+                            {
+                                "name": "Saykhan",
+                                "nick": "Mels"
+                            }
+                            """)
+                    .build();
+
+
+Тут можно указать более лаконичный тип:
+
+@Type(type = "jsonb")
+private String info;
+
+Или:
+
+@TypeDef(name = "dmdev", typeClass = JsonBinaryType.class)
+public class User {
+}
+
+Тут мы указали название и тип класса, который мы преобразовывали. И если нам наш
+тип не предоставляет лаконичное название, мы можем использовать данный вариант.
+
+@Type(type = "dmdev")
+private String info;
+
+Можно и несколько указать над классом или пакетом через @TypeDefs().
+
+Как видите, сложно описывать свои типы, проще найти в интернете готовые библиотеки, которые
+предоставляют специальные классы для работы с какими-то нестандартными типами данных из разных
+СУБД.

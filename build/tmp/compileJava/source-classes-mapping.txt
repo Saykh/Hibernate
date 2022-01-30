@@ -1,5 +1,3 @@
-com/dmdev/entity/Role.java
- com.dmdev.entity.Role
 com/dmdev/entity/Birthday.java
  com.dmdev.entity.Birthday
 com/dmdev/entity/User.java
@@ -9,3 +7,7 @@ com/dmdev/converter/BirthdayConverter.java
  com.dmdev.converter.BirthdayConverter
 com/dmdev/HibernateRunner.java
  com.dmdev.HibernateRunner
+com/dmdev/type/JsonType.java
+ com.dmdev.type.JsonType
+com/dmdev/entity/Role.java
+ com.dmdev.entity.Role
