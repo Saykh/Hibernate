@@ -9,5 +9,7 @@ com/dmdev/entity/Role.java
  com.dmdev.entity.Role
 com/dmdev/type/JsonType.java
  com.dmdev.type.JsonType
+com/dmdev/util/HibernateUtil.java
+ com.dmdev.util.HibernateUtil
 com/dmdev/HibernateRunner.java
  com.dmdev.HibernateRunner
