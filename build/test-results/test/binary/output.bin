@@ -1,7 +1,7 @@
 INSERT
 INTO
 .users
-1(username, firstname, lastname, birth_date, age)
+8(username, firstname, lastname, birth_date, role, info)
 VALUES
-(?, ?, ?, ?, ?)
+(?, ?, ?, ?, ?, ?)
 

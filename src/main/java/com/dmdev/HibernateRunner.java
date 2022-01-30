@@ -51,6 +51,8 @@ public class HibernateRunner {
 
             session.saveOrUpdate(user);
 
+            User userGet = session.get(User.class, "edilov_st@mail.ru");
+
             session.getTransaction().commit();
 
         }
