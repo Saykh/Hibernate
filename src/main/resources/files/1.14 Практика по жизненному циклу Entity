@@ -1,0 +1,264 @@
+1.14 Практика по жизненному циклу Entity
+
+На предыдущей лекции мы познакомились с ЖЦ сущности, теперь посмотрим, в какой момент времени та или иная сущность
+находится в одной из этих состояний.
+
+
+1. Мы создали сущность. Она сейчас в состоянии TRANSIENT по отношению к каждой из этих сессий.
+
+public static void main(String[] args) {
+
+
+        User user = User.builder()
+                .username("musaev_mv@mail.ru")
+                .firstname("Mansur")
+                .lastname("Musaev")
+                .birthDate(new Birthday(LocalDate.of(1993,8,8)))
+                .role(Role.ADMIN)
+                .info("""
+                            {
+                                "name": "Mansur",
+                                "nick": "Mans"
+                            }
+                            """)
+                .build();
+
+
+        try (SessionFactory sessionFactory = HibernateUtil.buildSessionFactory()) {
+
+            try(Session session1 = sessionFactory.openSession()) {
+
+                session1.beginTransaction();
+
+
+
+
+                session1.getTransaction().commit();
+            }
+
+
+            try(Session session2 = sessionFactory.openSession()) {
+
+                session2.beginTransaction();
+
+
+
+
+                session2.getTransaction().commit();
+            }
+
+
+        }
+
+    }
+
+2. Вот мы у первой сессии вызвали метод saveOrUpdate.
+
+public static void main(String[] args) {
+
+
+
+        User user = User.builder()
+                .username("musaev_mv@mail.ru")
+                .firstname("Mansur")
+                .lastname("Musaev")
+                .birthDate(new Birthday(LocalDate.of(1993,8,8)))
+                .role(Role.ADMIN)
+                .info("""
+                            {
+                                "name": "Mansur",
+                                "nick": "Mans"
+                            }
+                            """)
+                .build();
+
+
+        try (SessionFactory sessionFactory = HibernateUtil.buildSessionFactory()) {
+
+            try(Session session1 = sessionFactory.openSession()) {
+
+                session1.beginTransaction();
+
+
+
+                session1.saveOrUpdate(user);
+
+
+
+                session1.getTransaction().commit();
+            }
+
+
+            try(Session session2 = sessionFactory.openSession()) {
+
+                session2.beginTransaction();
+
+
+
+                session2.getTransaction().commit();
+            }
+
+
+        }
+
+    }
+
+
+
+Теперь данная сущность будет в PERSISTENT состоянии по отношению к session1, но всё же в состоянии TRANSIENT по
+отношению к session2, так как он никогда не был проассоциирован с этой сессией.
+
+3.
+ public static void main(String[] args) {
+
+
+
+         User user = User.builder()
+                 .username("musaev_mv@mail.ru")
+                 .firstname("Mansur")
+                 .lastname("Musaev")
+                 .birthDate(new Birthday(LocalDate.of(1993,8,8)))
+                 .role(Role.ADMIN)
+                 .info("""
+                             {
+                                 "name": "Mansur",
+                                 "nick": "Mans"
+                             }
+                             """)
+                 .build();
+
+
+         try (SessionFactory sessionFactory = HibernateUtil.buildSessionFactory()) {
+
+             try(Session session1 = sessionFactory.openSession()) {
+
+                 session1.beginTransaction();
+
+
+
+                 session1.saveOrUpdate(user);
+
+
+
+                 session1.getTransaction().commit();
+             }
+
+
+             try(Session session2 = sessionFactory.openSession()) {
+
+                 session2.beginTransaction();
+
+
+                 session2.getTransaction().commit();
+             }
+
+
+         }
+
+     }
+
+session1.getTransaction().commit(); -> закрытие сессии, её уже, конечно, не существует, но если бы она была и мы вызвали
+метод close, то есть закрыли её, то сущность была бы в состоянии DETACHED по отношению к session1 и всё ещё в состоянии
+TRANSIENT по отношению к session2. PersistentContext у session2 = null.
+
+
+4. session2.delete(user) -> сначала произойдет метод get, чтобы проассоциировать пользователя с session2, а только потом
+произойдет delete. Так как данный метод переводит состоянии сущности из Persistent в Removed, а не из Transient в Removed.
+Пользователь появился в кэше, а затем при комит, когда произойдет запрос delete, он перешёл в состояние REMOVED.
+
+
+ public static void main(String[] args) {
+
+
+
+        User user = User.builder()
+                .username("musaev_mv@mail.ru")
+                .firstname("Mansur")
+                .lastname("Musaev")
+                .birthDate(new Birthday(LocalDate.of(1993,8,8)))
+                .role(Role.ADMIN)
+                .info("""
+                            {
+                                "name": "Mansur",
+                                "nick": "Mans"
+                            }
+                            """)
+                .build();
+
+
+        try (SessionFactory sessionFactory = HibernateUtil.buildSessionFactory()) {
+
+            try(Session session1 = sessionFactory.openSession()) {
+
+                session1.beginTransaction();
+
+
+
+                session1.saveOrUpdate(user);
+
+
+
+                session1.getTransaction().commit();
+            }
+
+
+            try(Session session2 = sessionFactory.openSession()) {
+                session2.beginTransaction();
+
+                session2.delete(user);
+
+
+                session2.getTransaction().commit();
+            }
+
+
+        }
+
+    }
+
+
+Есть ещё методы refresh и merge.
+
+1. refresh -> происходит запрос в БД и значения из БД накладываем на нашего пользователя.
+Под капотом -> session2 вызвал метод get и получил свежего пользователя из БД. И поля из этого свежего пользователя
+из БД установились на нашего пользователя. Короче, происходит запрос в БД для получения свежих данных, а потом они
+синхронизируются с полями пользователя.
+Теперь в кэше у нас пользователь Мансур Мусаев. А до этого в данном случае в кэше ничего не было.
+
+try(Session session2 = sessionFactory.openSession()) {
+                session2.beginTransaction();
+
+                user.setFirstname("Ibrohim");
+                session2.refresh(user);
+
+
+                session2.getTransaction().commit();
+            }
+
+
+2. merge -> делает наоборот, то есть наши поля сущности главнее, чем те, что в БД. Он тоже идёт в БД, создаёт сущность
+основании данных этих полей и устанавливает у этого пользователя данные из пользователя, который мы передали в метод
+merge.
+То есть данный метод возвращает нового пользователя из БД, на который мы наложили соответствующие изменения.
+То есть тут происходит запрос сначала на get, а потом update.
+
+ try(Session session2 = sessionFactory.openSession()) {
+                session2.beginTransaction();
+
+                user.setFirstname("Ramzan");
+                session2.merge(user);
+
+
+                session2.getTransaction().commit();
+            }
+
+Мусаев Мансур стал в БД Рамзаном.
+
+
+Теперь мы знаем, что верится вокруг PersistentContext, который является кэшем первого уровня, и если мы хотим работать с
+сущностями в рамках нашей сессии, мы обязаны тем или иным образом с БД, положив в ассоциативный массив, где ключом
+является id сущности и её EntityPersister, а значением сама эта сущность.
+
+
+
+
