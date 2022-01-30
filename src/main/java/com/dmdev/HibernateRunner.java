@@ -49,7 +49,7 @@ public class HibernateRunner {
                     .build();
 
 
-            session.saveOrUpdate(user);
+            User userGet = session.get(User.class, 2L);
 
             session.getTransaction().commit();
 
