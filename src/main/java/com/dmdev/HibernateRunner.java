@@ -35,21 +35,21 @@ public class HibernateRunner {
             session.beginTransaction();
 
             User user = User.builder()
-                    .username("edilov_st@mail.ru")
-                    .firstname("Saykhan")
-                    .lastname("Edilov")
-                    .birthDate(new Birthday(LocalDate.of(1994,7,23)))
+                    .username("edilova_at@mail.ru")
+                    .firstname("Albina")
+                    .lastname("Edilova")
+                    .birthDate(new Birthday(LocalDate.of(1993,4,8)))
                     .role(Role.ADMIN)
                     .info("""
                             {   
-                                "name": "Saykhan",
-                                "nick": "Mels"
+                                "name": "Albina",
+                                "nick": "Khedar"
                             }
                             """)
                     .build();
 
 
-            session.save(user);
+            session.saveOrUpdate(user);
 
             session.getTransaction().commit();
 
