@@ -1,3 +1,11 @@
+2.3 Логгирование с использованием файла
+
+
+Ранее мы использовали appender для вывода в консоль. Но мощь логов в том, что мы можем выводить их куда угодною - в БД,
+файл и отправлять по TCP.
+
+Реализуем это с помощью новых appender.
+
 <?xml version="1.0" encoding="UTF-8" ?>
 <!DOCTYPE log4j:configuration SYSTEM "log4j.dtd">
 
@@ -29,7 +37,24 @@
         </filter>
     </appender>
 
+    <!-- Сам лог. Их может быть несколько -->
+    <root>
+        <level value="info"/>
+        <appender-ref ref="console"/> <!-- Если их несколько, можно перечислить -->
+        <appender-ref ref="file"/>
+    </root>
 
+</log4j:configuration>
+
+
+Вспомни про:
+
+  <param name="append" value="true"/>
+  <param name="maxFileSize" value="20MB"/>
+  <param name="maxBackupIndex" value="10"/>
+
+
+Можем добавить ещё один лог:
 
     <!-- root логгер самый главный, но мы вот так можем создавать свои. Название логгера определяется
     пакету мы хотим отслеживать. Теперь все лог сообщения из этого пакета будут попадать в этот логгер.
@@ -50,5 +75,17 @@
     </root>
 
 
+Чтобы не дублировать в каждом классе ->
 
-</log4j:configuration>
+
+public class HibernateRunner {
+
+    private static final Logger log = LoggerFactory.getLogger(HibernateRunner.class);
+
+}
+, мы можем над классом использовать аннотацию @Slf4j, которая сгенерит нам такую строку для соответствующего класса.
+
+@Slf4j
+public class HibernateRunner {
+
+}

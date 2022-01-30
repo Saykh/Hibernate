@@ -6,6 +6,7 @@ import com.dmdev.entity.Birthday;
 import com.dmdev.entity.Role;
 import com.dmdev.entity.User;
 import com.vladmihalcea.hibernate.type.json.JsonBinaryType;
+import lombok.extern.slf4j.Slf4j;
 import org.hibernate.*;
 import org.hibernate.boot.model.naming.CamelCaseToUnderscoresNamingStrategy;
 import org.hibernate.cfg.Configuration;
@@ -28,9 +29,8 @@ import org.slf4j.LoggerFactory;
 
 import java.time.LocalDate;
 
+@Slf4j
 public class HibernateRunner {
-
-    private static final Logger logger = LoggerFactory.getLogger(HibernateRunner.class);
 
     public static void main(String[] args) {
 
@@ -47,7 +47,7 @@ public class HibernateRunner {
                             }
                             """)
                 .build();
-        logger.info("User entity is in transient static, object: {}", user);
+        log.info("User entity is in transient static, object: {}", user);
 
 
         try (SessionFactory sessionFactory = HibernateUtil.buildSessionFactory()) {
@@ -56,18 +56,18 @@ public class HibernateRunner {
             try(session1) {
 
                 Transaction transaction = session1.beginTransaction();
-                logger.trace("Transaction is created, {}", transaction);
+                log.trace("Transaction is created, {}", transaction);
 
 
                 session1.saveOrUpdate(user);
-                logger.trace("User is in persistence state: {}, session {}", user, session1);
+                log.trace("User is in persistence state: {}, session {}", user, session1);
 
                 session1.getTransaction().commit();
             }
-                logger.warn("User is in detached state: {}, session is closed {}", user, session1);
+            log.warn("User is in detached state: {}, session is closed {}", user, session1);
 
         } catch (Exception exception) {
-            logger.error("Exception occurred", exception);
+            log.error("Exception occurred", exception);
             throw exception;
         }
 
