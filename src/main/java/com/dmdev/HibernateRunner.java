@@ -2,9 +2,7 @@ package com.dmdev;
 
 
 import com.dmdev.converter.BirthdayConverter;
-import com.dmdev.entity.Birthday;
-import com.dmdev.entity.Role;
-import com.dmdev.entity.User;
+import com.dmdev.entity.*;
 import com.vladmihalcea.hibernate.type.json.JsonBinaryType;
 import lombok.extern.slf4j.Slf4j;
 import org.hibernate.*;
@@ -35,15 +33,17 @@ public class HibernateRunner {
     public static void main(String[] args) {
 
         User user = User.builder()
-                .username("isaeva_au@mail.ru")
-                .firstname("Aska")
-                .lastname("Isaeva")
-                .birthDate(new Birthday(LocalDate.of(1963,11,8)))
+                .username("edilov_as@mail.ru")
+                .personalInfo(PersonalInfo.builder()
+                        .firstname("Abdul")
+                        .lastname("Edilov")
+                        .birthDate(new Birthday(LocalDate.of(1960,2,23)))
+                        .build())
                 .role(Role.ADMIN)
                 .info("""
                             {
-                                "name": "Aska",
-                                "nick": "Tiger"
+                                "name": "Abdul",
+                                "nick": "Tura"
                             }
                             """)
                 .build();

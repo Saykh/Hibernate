@@ -1,0 +1,96 @@
+3.1 Embedded components (встраиваемые компоненты)
+
+Часто на уровне Джавы мы работаем со сложными объектами, которые внутри себя содержат поля, и например, мы хотим
+объединить некоторые поля (firstname,lastname) сущности в одно поле PersonInfo. В sql мы не хотим создать встраемый тип,
+проще создать такие объекты на уровне Java, а в sql оставить всё как есть.
+
+Либо, например, в legacy БД есть составные первичные ключи, которые необходиые объединять в отдельные объекты, чтобы
+работать как с одним ключем.
+
+Создали встраиваемый компонент:
+
+@Data
+@AllArgsConstructor
+@NoArgsConstructor
+@Builder
+@Embeddable
+public class PersonalInfo {
+
+    private String firstname;
+
+    private String lastname;
+
+    @Convert(converter = BirthdayConverter.class)
+    private Birthday birthDate;
+
+}
+
+@Embeddable -> указали, что это ВСТРАИВАЕМЫЙ КОМПОНЕНТ
+
+
+
+
+@Entity
+@Data
+@AllArgsConstructor
+@NoArgsConstructor
+@Builder
+@Table(name = "users")
+@TypeDef(name = "dmdev", typeClass = JsonBinaryType.class)
+public class User {
+
+    @Id
+    private String username;
+
+    @Enumerated(EnumType.STRING)
+    private Role role;
+
+    @Type(type = "dmdev")
+    private String info;
+
+
+    @Embedded
+    private PersonalInfo personalInfo;
+
+}
+
+@Embedded -> указали, что это встроенный компонент. Данная аннотация не является обязательной.
+
+
+Теперь наша сущность строится вот так:
+
+   User user = User.builder()
+                .username("edilov_as@mail.ru")
+                .personalInfo(PersonalInfo.builder()
+                        .firstname("Abdul")
+                        .lastname("Edilov")
+                        .birthDate(new Birthday(LocalDate.of(1960,2,23)))
+                        .build())
+                .role(Role.ADMIN)
+                .info("""
+                            {
+                                "name": "Abdul",
+                                "nick": "Tura"
+                            }
+                            """)
+                .build();
+
+
+Как всё это работает? Всё сводится к Configuration (класс), в котором есть лист типа BasicTypes (интерфейс), который
+наследуется от основного интерфейса Type, его опосредственно реализует класс ComponentType - благодаря методам которого
+всё это и работает.
+
+Если бы мы в HibernateUtil не указали:
+
+configuration.setPhysicalNamingStrategy(new CamelCaseToUnderscoresNamingStrategy());
+
+нам бы пришлось сделать так:
+
+@Embedded
+@AttributeOverride(name = "birthDate", column = @Column(name = "birth_date"))
+private PersonalInfo personalInfo;
+
+@AttributeOverride(name = "birthDate", column = @Column(name = "birth_date"))
+
+И таких AttributeOverride можно делать несколько, если есть несоответствие названий нескольких полей с названием
+колонок.

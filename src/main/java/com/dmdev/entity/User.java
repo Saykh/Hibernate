@@ -24,21 +24,16 @@ public class User {
     @Id
     private String username;
 
-    private String firstname;
-
-    private String lastname;
-
-    @Convert(converter = BirthdayConverter.class)
-    @Column(name = "birth_date")
-    private Birthday birthDate;
-
-
     @Enumerated(EnumType.STRING)
     private Role role;
 
-
     @Type(type = "dmdev")
     private String info;
+
+
+    @Embedded
+    @AttributeOverride(name = "birthDate", column = @Column(name = "birth_date"))
+    private PersonalInfo personalInfo;
 
 
 }
