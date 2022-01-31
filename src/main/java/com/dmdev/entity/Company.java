@@ -24,7 +24,7 @@ public class Company {
     @Column(unique = true,nullable = false)
     private String name;
 
-    @OneToMany(mappedBy = "company", fetch = FetchType.LAZY,cascade = CascadeType.ALL)
+    @OneToMany(orphanRemoval = true, mappedBy = "company", fetch = FetchType.LAZY,cascade = CascadeType.ALL)
     @Builder.Default
     private Set<User> users = new HashSet<>();
 

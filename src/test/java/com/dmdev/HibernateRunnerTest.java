@@ -145,7 +145,7 @@ class HibernateRunnerTest {
 
         session.beginTransaction();
 
-        Company company = session.get(Company.class,1);
+        Company company = session.get(Company.class,2);
         session.delete(company);
 
 
@@ -171,6 +171,25 @@ class HibernateRunnerTest {
         }
 
     }
+    
+    @Test
+    void testOrphanRemoval() {
+        try (var sessionFactory = HibernateUtil.buildSessionFactory();
+             var session = sessionFactory.openSession()) {
+            session.beginTransaction();
+
+            Company company = session.get(Company.class, 2);
+
+            company.getUsers().removeIf(user -> user.getId().equals(2L));
+
+            session.getTransaction().commit();
+
+
+        }
+        
+        
+    }
+
 
 
 

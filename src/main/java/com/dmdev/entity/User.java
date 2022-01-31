@@ -41,7 +41,7 @@ public class User {
     @Type(type = "dmdev")
     private String info;
 
-    @ManyToOne(optional = false, fetch = FetchType.EAGER, cascade = CascadeType.ALL)
+    @ManyToOne(optional = false, fetch = FetchType.EAGER)
     @JoinColumn(name = "company_id")
     private Company company;
 }

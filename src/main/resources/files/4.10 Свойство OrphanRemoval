@@ -1,0 +1,62 @@
+4.10 Свойство OrphanRemoval
+
+Рассмотрели свойства cascade, fetch, mappedBy в OneToMany.
+
+Осталось ещё OrphanRemoval.
+
+OrphanRemoval чем-то поход на cascade = REMOVE, но работает чуть иначе.
+
+Если мы делаем OrphanRemoval = true -> что делает с сущностью, над которой мы поставили мапинг, если удаляем сущность из
+коллекции.
+
+    @OneToMany(orphanRemoval = true, mappedBy = "company", fetch = FetchType.LAZY,cascade = CascadeType.ALL)
+    @Builder.Default
+    private Set<User> users = new HashSet<>();
+
+   @Test
+    void testOrphanRemoval() {
+        try (var sessionFactory = HibernateUtil.buildSessionFactory();
+             var session = sessionFactory.openSession()) {
+            session.beginTransaction();
+
+            Company company = session.get(Company.class, 1);
+
+            company.getUsers().removeIf(user -> user.getId().equals(2L));
+
+            session.getTransaction().commit();
+        }
+
+Вот мы хотим удалить конкретного пользователя, тут с компанией ничего не произойдет.
+
+Но заметь, тут у нас ALL ->
+
+
+    @ManyToOne(optional = false, fetch = FetchType.EAGER, cascade = CascadeType.ALL)
+    @JoinColumn(name = "company_id")
+    private Company company;
+
+Следовательно, если удалим пользователя, он удалит и компанию. Но ведь в компании есть пользователи и там у нас тоже
+стоит ALL, значит он удалит всех пользователей. А мы хотим удалить ОДНОГО пользователя.
+
+Поэтому уберём ALL ->
+
+       @ManyToOne(optional = false, fetch = FetchType.EAGER, cascade = CascadeType.ALL)
+       @JoinColumn(name = "company_id")
+       private Company company;
+
+
+Вот мы удалили пользователя с ID = 2. Но с OrphanRemoval нужно быть острожным, представь, что на нашу таблицу польз-й
+ссылалась бы другая таблица - тогда бы словили ошибку, попытавшись удалить пользователя.
+
+   @Test
+    void testOrphanRemoval() {
+        try (var sessionFactory = HibernateUtil.buildSessionFactory();
+             var session = sessionFactory.openSession()) {
+            session.beginTransaction();
+
+            Company company = session.get(Company.class, 1);
+
+            company.getUsers().removeIf(user -> user.getId().equals(2L));
+
+            session.getTransaction().commit();
+        }
