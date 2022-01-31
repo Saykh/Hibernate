@@ -21,9 +21,14 @@ import javax.persistence.*;
 @TypeDef(name = "dmdev", typeClass = JsonBinaryType.class)
 public class User {
 
-    @Id
-    @GeneratedValue(strategy = GenerationType.IDENTITY)
-    private Long id;
+
+
+    @EmbeddedId
+    @AttributeOverride(name = "birthDate", column = @Column(name = "birth_date"))
+    private PersonalInfo personalInfo;
+
+
+
 
     @Column(unique = true)
     private String username;
@@ -33,11 +38,6 @@ public class User {
 
     @Type(type = "dmdev")
     private String info;
-
-
-    @Embedded
-    @AttributeOverride(name = "birthDate", column = @Column(name = "birth_date"))
-    private PersonalInfo personalInfo;
 
 
 }

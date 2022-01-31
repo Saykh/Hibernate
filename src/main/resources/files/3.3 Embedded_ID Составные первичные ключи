@@ -1,0 +1,78 @@
+3.3 Составные первичные ключи
+
+
+1.
+
+CREATE TABLE users(
+       firstname VARCHAR(128),
+       lastname VARCHAR(128),
+       birth_date DATE,
+       username VARCHAR(128),
+       role VARCHAR(32),
+       info JSONB,
+       PRIMARY KEY (firstname,lastname,birth_date)
+);
+
+
+2.
+
+@EmbeddedId
+@AttributeOverride(name = "birthDate", column = @Column(name = "birth_date"))
+private PersonalInfo personalInfo;
+
+@EmbeddedId -> обязаны указать, что это составной PK.
+
+
+
+3. Класс первичного ключа обязан реализовывать интерфейс Serializable.
+
+@Data
+@AllArgsConstructor
+@NoArgsConstructor
+@Builder
+@Embeddable
+public class PersonalInfo implements Serializable {
+
+    @Serial
+    private static final long serialVersionUID = 1L;
+
+    private String firstname;
+
+    private String lastname;
+
+    @Convert(converter = BirthdayConverter.class)
+    private Birthday birthDate;
+
+
+
+3. Как теперь, например, получить?
+
+ User user = User.builder()
+                .personalInfo(PersonalInfo.builder()
+                        .firstname("Abdul")
+                        .lastname("Edilov")
+                        .birthDate(new Birthday(LocalDate.of(1960,2,23)))
+                        .build())
+                .username("edilov_as@mail.ru")
+                .role(Role.ADMIN)
+                .info("""
+                            {
+                                "name": "Abdul",
+                                "nick": "Tura"
+                            }
+                            """)
+                .build();
+
+session1.saveOrUpdate(user);
+
+
+
+PersonalInfo key = PersonalInfo.builder()
+                        .firstname("Abdul")
+                        .lastname("Edilov")
+                        .birthDate(new Birthday(LocalDate.of(1960,2,23)))
+                        .build();
+
+session2.get(User.class, key);
+            }
+
