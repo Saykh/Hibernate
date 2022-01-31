@@ -1,0 +1,101 @@
+4.7 Entity equals and hashCode
+
+На предыдущей лекции разобрали cascade c oneToMany, уяснили, что лучше делать cascade на уровне БД.
+
+Кроме того, мы словили StackOverFlowError исключение, так как в компании и users есть ссылки друг на друга, то есть bi-direction
+связь, поэтому так важно определить уникальный ключ для каждой сущности. В SQL уникальность определяется по PK, этот вариант можно было
+бы использовать этот вариант - не заниматься исключением, а сделать так ->
+@EqualsAndHashCode(of = "id")
+@ToString(of = "id")
+
+
+@Entity
+@Data
+@AllArgsConstructor
+@NoArgsConstructor
+@Builder
+@Table(name = "users")
+@TypeDef(name = "dmdev", typeClass = JsonBinaryType.class)
+@Access(AccessType.FIELD)
+@ToString(of = "id")
+@EqualsAndHashCode(of = "id")
+public class User {
+
+}
+
+
+
+
+@Data
+@NoArgsConstructor
+@AllArgsConstructor
+@Builder
+@Entity
+@ToString(of = "id")
+@EqualsAndHashCode(of = "id")
+public class Company {
+
+    @Id
+    @GeneratedValue(strategy = GenerationType.IDENTITY)
+    private Integer id;
+
+    @Column(unique = true)
+    private String name;
+
+    @OneToMany(mappedBy = "company", fetch = FetchType.LAZY,cascade = CascadeType.ALL)
+    @Builder.Default
+    private Set<User> users = new HashSet<>();
+
+    public void addUser(User user) {
+        users.add(user);
+        user.setCompany(this);
+    }
+
+}
+
+Но есть некоторые нюансы, которые мешают нам использовать этот вариант, а именно такие коллекции, как Set, Map, исп-е
+equals и hashcode для своих внутренних реализаций. Получается, когда мы добавляем новую сущность в компанию, то у неё id
+равен null. Если добавим несколько сущностей, то id у них будет null, тогда equals и хэшкод у них будет одинаковый -
+null.
+
+        company.addUser(user);
+
+        session.save(company);
+
+
+
+
+И что тогда делать? Сложный вопрос. Постарайтесь найти натуральное, уникальное поле и использовать его для equals и
+хэшкод. В нашем случае, например, username и name.
+
+
+@Entity
+@Data
+@AllArgsConstructor
+@NoArgsConstructor
+@Builder
+@Table(name = "users")
+@TypeDef(name = "dmdev", typeClass = JsonBinaryType.class)
+@Access(AccessType.FIELD)
+@ToString(exclude = "company")
+@EqualsAndHashCode(of = "username")
+public class User {
+}
+
+
+
+@Data
+@NoArgsConstructor
+@AllArgsConstructor
+@Builder
+@Entity
+@ToString(exclude = "users")
+@EqualsAndHashCode(of = "name")
+public class Company {
+
+}
+
+
+А что делать, если таких полей нет? Ну тогда использовать EqualsAndHashCode на основании ВСЕХ ПОЛЕЙ, которые у вас
+есть в вашей сущность, естественно, за исключением каких-то мапинг-ассоциаций, чтобы не было зацикливани, и вы увидели
+StackOverFlowError при вызове equals, hashcode, toString.

@@ -19,6 +19,7 @@ import javax.persistence.*;
 @TypeDef(name = "dmdev", typeClass = JsonBinaryType.class)
 @Access(AccessType.FIELD)
 @ToString(exclude = "company")
+@EqualsAndHashCode(of = "username")
 public class User {
 
 
@@ -27,7 +28,7 @@ public class User {
     private Long id;
 
 
-    @Column(unique = true)
+    @Column(unique = true,nullable = false)
     private String username;
 
     @Enumerated(EnumType.STRING)

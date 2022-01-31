@@ -14,14 +14,14 @@ import java.util.Set;
 @Builder
 @Entity
 @ToString(exclude = "users")
-@EqualsAndHashCode(exclude = "users")
+@EqualsAndHashCode(of = "name")
 public class Company {
 
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Integer id;
 
-    @Column(unique = true)
+    @Column(unique = true,nullable = false)
     private String name;
 
     @OneToMany(mappedBy = "company", fetch = FetchType.LAZY,cascade = CascadeType.ALL)
