@@ -1,0 +1,41 @@
+4.4 Cascade types
+
+Разобрались с прокси. Теперь переходим к последнему значению в ManyToOne - Cascade types.
+
+
+Cascade types - это enum со значениями (операции) :
+
+1. ALL
+
+2. PERSIST
+
+3. MERGE
+
+4. REMOVE
+
+5. REFRESH
+
+6. DETACHED
+
+Это значит, если мы, например, укажем Cascade type, если главная сущность, у которой содержится аннотация ManyToOne
+переходит из известных состояний, что делать с сущностью, над которой стоит эта аннотация - должна ли она переходить в
+же состояние или нет.
+
+    @ManyToOne(optional = false, fetch = FetchType.EAGER, cascade = CascadeType.DETACH)
+    @JoinColumn(name = "company_id")
+    private Company company;
+
+
+
+
+Вот такое лучше не делать - соблюдай parent-child связь. Компания уже должна существовать. Компания вообще тут является
+главной сущностью над пользователем.
+Будет ошибка. Мы должны сначала сохранить компанию, а потом пользователя. Откуда он возьмёт id компании до её создания.
+Поэтому, скорее всего, вы будете использовать такой вариант для OneToMane, в которой
+будут коллекции наших пользователей, который работают в компании.
+
+    @ManyToOne(fetch = FetchType.EAGER, cascade = CascadeType.PERSIST)
+    @JoinColumn(name = "company_id")
+    private Company company;
+
+    session1.save(user1);
