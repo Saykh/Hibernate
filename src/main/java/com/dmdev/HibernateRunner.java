@@ -64,12 +64,16 @@ public class HibernateRunner {
 
 
                 User user1 = session1.get(User.class, 1L);
+                Company proxyCompany = user1.getCompany();
+
+                String name = company.getName();
+
+                Object companyNoProxy = Hibernate.unproxy(proxyCompany);
 
 
 
                 session1.getTransaction().commit();
             }
-
 
         }
     }

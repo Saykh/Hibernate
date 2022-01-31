@@ -1,0 +1,76 @@
+4.3 Hibernate Proxy
+
+На прошлой лекции мы видели, как Hibernate, используя свой Proxy, позволяет нам лениво иниц-ть какую-то сущность, если
+мы его об этом попросим. Разберем, как они использует Прокси для ленивой инициализации.
+
+
+
+Есть два варианта создания прокси:
+
+1. динамический прокси - создание прокси через реализ-ые интерфейсы нашего класса, в данном случае интерфейсы Company.
+
+2. использует extends - то есть наследуется от нашей компани, в этом есть преимущества, поэтому Hibernate его и исп-т,
+именно поэтому в CompanyHibernateProxy мы видели поля id, name, что и у нашего класса, но они никогда не будут проин-ны,
+будут null, они просто достались к нам по наследству.
+
+1.
+
+    @Test
+    void testDynamic() {
+        Company company = new Company();
+        Object proxy = Proxy.newProxyInstance(company.getClass().getClassLoader(),
+                company.getClass().getInterfaces(), new InvocationHandler() {
+                    @Override
+                    public Object invoke(Object proxy, Method method, Object[] args) throws Throwable {
+                        return method.invoke(company,args);
+                    }
+                });
+    }
+
+Но тут ограничения, у нас нет реализуемых интерфейсов у Company. В виду этого ограничения, Hibernate этот вариант и не
+использует.
+
+2.
+
+public class CompanyProxy extends Company implements HibernateProxy, ProxyConfiguration {
+
+    private ByteBuddyInterceptor byteBuddyInterceptor;
+
+
+    @Override
+    public Object writeReplace() {
+        return null;
+    }
+
+    @Override
+    public LazyInitializer getHibernateLazyInitializer() {
+        return byteBuddyInterceptor;
+    }
+
+    @Override
+    public void $$_hibernate_set_interceptor(Interceptor interceptor) {
+
+    }
+}
+
+Прокси - это просто обёртка над нашим настоящим классом (сущностью).
+
+Можем из прокси извлечь настоящую сущность из нашего прокси.
+
+Object companyNoProxy = Hibernate.unproxy(proxyCompany);
+
+
+try (session1) {
+
+                Transaction transaction = session1.beginTransaction();
+
+
+                User user1 = session1.get(User.class, 1L);
+                Company proxyCompany = user1.getCompany();
+
+                String name = company.getName();
+
+                Object companyNoProxy = Hibernate.unproxy(proxyCompany);
+
+                session1.getTransaction().commit();
+            }
