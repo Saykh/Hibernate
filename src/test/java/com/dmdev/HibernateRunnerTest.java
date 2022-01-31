@@ -153,6 +153,22 @@ class HibernateRunnerTest {
 
         session.getTransaction().commit();
 
+    }
+
+    @Test
+    void testLazyInitializationException() {
+        Company company = null;
+        try (var sessionFactory = HibernateUtil.buildSessionFactory();
+             var session = sessionFactory.openSession()) {
+            session.beginTransaction();
+
+            company = session.getReference(Company.class, 1);
+
+            session.getTransaction().commit();
+            var users = company.getUsers();
+            System.out.println(users.size());
+
+        }
 
     }
 
