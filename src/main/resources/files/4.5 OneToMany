@@ -1,0 +1,76 @@
+4.5 OneToMany
+
+Тут каскадное управление сущностями будет более ярко выражено, и там оно часто используется.
+
+Ранее у нас множество пользователей относились к компании.
+
+Теперь у нас одна компания относится к множеству пользователей. Будет у нас КОЛЛЕКЦИЯ пользоватей в company,
+
+Там, где маппинг ассоциация заканчивается на MANY, то всегда будет коллекция.
+
+В нашем случае на ассоциацию ManyToOne добавляем связь OneToMany - bi-direction связь, и в таком случае не нужно
+указывать @JoinColumn, достаточно свойство mapped by = "company" - указываем эту связь просто на компанию в нашей
+сущности пользователь, другими словами на поле, а у нас она называется company (в сущности User).
+
+    @OneToMany(mappedBy = "company")
+    private List<User> users;
+
+
+Но помните, что мы можем создавать OneToMany связь без связи в нашей таблице пользователь - связи ManyToOne.
+
+
+    @Test
+    void oneToMany() {
+        @Cleanup var sessionFactory = HibernateUtil.buildSessionFactory();
+        @Cleanup var session = sessionFactory.openSession();
+
+        session.beginTransaction();
+
+        var company = session.get(Company.class, 1);
+        System.out.println();
+
+        session.getTransaction().commit();
+
+    }
+
+
+
+Написали тест. Не видим запрос на пользователей. Но видим какое-то PersistenceBag - одна из реализация Lazy коллекций,
+аналог HibernateProxy, но только не для одной сущности, а коллекций. Запроса на пользователей нет, только для компании,
+у нас же Lazy стоит.
+
+  @OneToMany(mappedBy = "company")
+  private List<User> users;
+
+У нас выше стоит ведь по умолчанию fetch = LAZY, именно поэтому мы видим PersistenceBag.
+
+А что если использовать Set?
+
+Ошибка StackOverFlow. Зацикливание. Реализация Set - HashSet -> при добавлении пользователей в компанию вызывается equals
+и хэшкод, в user вызывается equals, хэшкод, но там есть company, которая тоже попадает в equals, хэшкод.
+
+Обычно для одной сущности, то есть когда у нас ManyToOne, мы не исключаем соответ сущность из equals, хэшкод и toString.
+
+Но если у нас OneToMany и ManyToMany мы должны исключать.
+
+
+@Data
+@NoArgsConstructor
+@AllArgsConstructor
+@Builder
+@Entity
+@ToString(exclude = "users")
+@EqualsAndHashCode(exclude = "users")
+public class Company {
+
+    @Id
+    @GeneratedValue(strategy = GenerationType.IDENTITY)
+    private Integer id;
+
+    @Column(unique = true)
+    private String name;
+
+    @OneToMany(mappedBy = "company", fetch = FetchType.LAZY)
+    private List<User> users;
+
+}

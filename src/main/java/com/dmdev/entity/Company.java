@@ -1,18 +1,19 @@
 package com.dmdev.entity;
 
 
-import lombok.AllArgsConstructor;
-import lombok.Builder;
-import lombok.Data;
-import lombok.NoArgsConstructor;
+import lombok.*;
 
 import javax.persistence.*;
+import java.util.List;
+import java.util.Set;
 
 @Data
 @NoArgsConstructor
 @AllArgsConstructor
 @Builder
 @Entity
+@ToString(exclude = "users")
+@EqualsAndHashCode(exclude = "users")
 public class Company {
 
     @Id
@@ -21,5 +22,8 @@ public class Company {
 
     @Column(unique = true)
     private String name;
+
+    @OneToMany(mappedBy = "company", fetch = FetchType.LAZY)
+    private Set<User> users;
 
 }

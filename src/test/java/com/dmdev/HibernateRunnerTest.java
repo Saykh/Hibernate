@@ -1,8 +1,11 @@
 package com.dmdev;
 
 import com.dmdev.entity.Birthday;
+import com.dmdev.entity.Company;
 import com.dmdev.entity.PersonalInfo;
 import com.dmdev.entity.User;
+import com.dmdev.util.HibernateUtil;
+import lombok.Cleanup;
 import org.junit.jupiter.api.Test;
 
 import javax.persistence.Column;
@@ -82,6 +85,21 @@ class HibernateRunnerTest {
         Field userNameField = clazz.getDeclaredField("username");
         userNameField.setAccessible(true);
         userNameField.set(user, resultSet.getString("username"));
+    }
+
+
+    @Test
+    void oneToMany() {
+        @Cleanup var sessionFactory = HibernateUtil.buildSessionFactory();
+        @Cleanup var session = sessionFactory.openSession();
+
+        session.beginTransaction();
+
+        var company = session.get(Company.class, 1);
+        System.out.println();
+
+        session.getTransaction().commit();
+
     }
 
 }
