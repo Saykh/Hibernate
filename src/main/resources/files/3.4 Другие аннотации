@@ -1,0 +1,53 @@
+3.4 Другие аннотации
+
+1.
+
+@Access(AccessType.PROPERTY)
+public class User {
+}
+
+@Access -> по умолчанию FIELD. Говорит о том, что Hibernate будет использовать REFLECTION API для
+доступа к полям нашей сущности.
+
+PROPERTY -> будет использовать getters/setters. Тогда соответствующие аннотации использовались на геттерах соответствующих
+полей. То есть Hibernate будет через REFLECTION API будет использовать getters и setters вместо того, чтобы напрямую
+устанавливать значения и получать их из полей.
+
+
+2.
+
+@Enumerated(EnumType.STRING)
+@Transient
+private Role role;
+
+@Transient -> если не хочу какое-то поле сохранять в БД и извлекать его оттуда.
+Лучше не использовать - лучше хранить в сущности только те поля, которые действительно мапятся на соответствующие поля
+в БД.
+
+
+3.
+
+До введение DateTime API использовался специальный класс из java.util - Date. Но в БД же есть разные типы данных - Time,
+Timestamp, Date. Следовательно нам приходилось указывать, какой тип данных в БД мапится на соответствующий тип данных в
+Java и наоборот - как Date преобразовать в Time, Timestamp, Date.
+Для этого использовать аннотация @Temporal, по умолчанию она TIMESTAMP (аналог LocalDateTime в Java).
+
+@Temporal(TemporalType.TIMESTAMP)
+private Date date;
+
+Но не нужно использовать старый DateType API.
+
+У нас же есть - LocalDateTime, LocalDate, LocalTime.
+
+
+4.
+
+@ColumnTransformer -> трансформируем колонку перед тем, как считывать или записывать  - одно из двух или оба варианта,
+все зависит от того переопределим мы read, write или оба. Hibernate annotation.
+
+5.
+
+@Formula -> похож на @ColumnTransformer, но только на чтение.
+
+
+

@@ -6,6 +6,7 @@ import lombok.AllArgsConstructor;
 import lombok.Builder;
 import lombok.Data;
 import lombok.NoArgsConstructor;
+import org.hibernate.annotations.ColumnTransformer;
 import org.hibernate.annotations.Type;
 import org.hibernate.annotations.TypeDef;
 
@@ -19,6 +20,7 @@ import javax.persistence.*;
 @Builder
 @Table(name = "users")
 @TypeDef(name = "dmdev", typeClass = JsonBinaryType.class)
+@Access(AccessType.FIELD)
 public class User {
 
 
@@ -38,6 +40,8 @@ public class User {
 
     @Type(type = "dmdev")
     private String info;
+
+
 
 
 }
