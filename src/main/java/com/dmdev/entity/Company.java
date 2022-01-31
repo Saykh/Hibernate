@@ -4,6 +4,7 @@ package com.dmdev.entity;
 import lombok.*;
 
 import javax.persistence.*;
+import java.util.HashSet;
 import java.util.List;
 import java.util.Set;
 
@@ -23,7 +24,13 @@ public class Company {
     @Column(unique = true)
     private String name;
 
-    @OneToMany(mappedBy = "company", fetch = FetchType.LAZY)
-    private Set<User> users;
+    @OneToMany(mappedBy = "company", fetch = FetchType.LAZY,cascade = CascadeType.ALL)
+    @Builder.Default
+    private Set<User> users = new HashSet<>();
+
+    public void addUser(User user) {
+        users.add(user);
+        user.setCompany(this);
+    }
 
 }

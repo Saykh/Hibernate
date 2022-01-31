@@ -102,4 +102,61 @@ class HibernateRunnerTest {
 
     }
 
+
+
+    @Test
+    void addUserAtCompany() {
+
+        @Cleanup var sessionFactory = HibernateUtil.buildSessionFactory();
+        @Cleanup var session = sessionFactory.openSession();
+
+        session.beginTransaction();
+
+        Company company = Company.builder()
+                .name("Facebook")
+                .build();
+
+        User user = User.builder().
+                username("golos@mail.com")
+                .build();
+
+       // user.setCompany(company);
+       // company.getUsers().add(user);
+
+        company.addUser(user);
+
+        session.save(company);
+
+
+        System.out.println();
+
+        session.getTransaction().commit();
+
+
+    }
+
+
+
+    @Test
+    void deleteUser() {
+
+        @Cleanup var sessionFactory = HibernateUtil.buildSessionFactory();
+        @Cleanup var session = sessionFactory.openSession();
+
+        session.beginTransaction();
+
+        Company company = session.get(Company.class,1);
+        session.delete(company);
+
+
+        System.out.println();
+
+        session.getTransaction().commit();
+
+
+    }
+
+
+
+
 }

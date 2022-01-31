@@ -1,2 +1,7 @@
 com/dmdev/HibernateRunnerTest.java
  com.dmdev.HibernateRunnerTest
+com/dmdev/ProxyTest.java
+ com.dmdev.ProxyTest
+ com.dmdev.ProxyTest$1
+com/dmdev/CompanyProxy.java
+ com.dmdev.CompanyProxy

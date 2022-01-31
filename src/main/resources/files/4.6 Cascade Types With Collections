@@ -1,0 +1,110 @@
+4.6 Cascade Types With Collections
+
+Мы прошли маппинг OneToMany, узнали, что есть два варианта его реализации:
+
+1. bi - direction -> когда у нас есть связь в сущности user и мы просто указываем на неё в качестве поля.
+
+2. если такой связи нет, то через JoinColumn указать колонку в нашей сущности user, с помощью которой мы сделаем
+коллекцию наших пользователей.
+
+По умолчанию FETCH TYPE - LAZY, то есть на консоли сначала получаются компании, а потом пользователи, и это правильно.
+
+Если укажем EAGER, то когда получаю компанию, отобразится LEFT JOIN на пользователей. Почему EAGER плох?
+Представь, что таких маппингов несколько на другие сущности - все эти LEFT JOIN будет представлять собой декартовое
+произведение - много данных вытащим.
+
+Что касается cascade. Скорее всего, вы захотите использовать ALL. В таком случае, нам не помешает утилит метод добавления
+пользователя.
+Зачем он нужен? Почему нельзя через getUsers.add и добавить пользователя? Потому, что в нашего пользователя тоже нужно
+устанавливать компанию.
+
+
+    @OneToMany(mappedBy = "company", fetch = FetchType.LAZY,cascade = CascadeType.ALL)
+    @Builder.Default
+    private Set<User> users = new HashSet<>();
+
+    public void addUser(User user) {
+        users.add(user);
+        user.setCompany(this);
+    }
+
+@Builder.Default -> при создании компагии через builder, чтобы установились дефолтные значения, что в полях.
+
+
+
+
+    @Test
+    void addUserAtCompany() {
+
+        @Cleanup var sessionFactory = HibernateUtil.buildSessionFactory();
+        @Cleanup var session = sessionFactory.openSession();
+
+        session.beginTransaction();
+
+        Company company = Company.builder()
+                .name("Facebook")
+                .build();
+
+        User user = User.builder().
+                username("golos@mail.com")
+                .build();
+
+       Вместо этого:
+       // user.setCompany(company);
+       // company.getUsers().add(user);
+
+        это:
+        company.addUser(user);
+
+        session.save(company);
+
+
+        System.out.println();
+
+        session.getTransaction().commit();
+
+
+    }
+То есть будет insert company, а потом ещё insert user.
+И вот у нас вместе с сохранением компании, сохранятся все пользователи, у нас же cascade = ALL, его очень круто
+использовать в случае с OneToMany - когда приходится работать с коллекциями.
+
+Если удалим компанию, отлетят и все сотрудники из этой компании ->
+
+
+
+    @Test
+    void deleteUser() {
+
+        @Cleanup var sessionFactory = HibernateUtil.buildSessionFactory();
+        @Cleanup var session = sessionFactory.openSession();
+
+        session.beginTransaction();
+
+        Company company = session.get(Company.class,1);
+        session.delete(company);
+
+
+        System.out.println();
+
+        session.getTransaction().commit();
+
+
+    }
+
+    У нас если у нас и тут стоит ALL ->
+
+
+    @ManyToOne(optional = false, fetch = FetchType.EAGER, cascade = CascadeType.ALL)
+    @JoinColumn(name = "company_id")
+    private Company company;
+
+    Удаляем пользователя, тогда удаляется компания, а в компании тоже стоит ALL, тогда удаляются и все её пользователи.
+    А если бы в company не стоял ALL? Была бы ошибка. Там остались же ещё пользователи, на которую ссылаются пользов-ли.
+
+    Прощё использовать cascade (ON DELETE CASCADE) на уровне БД. В таком случае, сам БД удалит всех пользователей при
+    удалении компании.
+
+
+
+
