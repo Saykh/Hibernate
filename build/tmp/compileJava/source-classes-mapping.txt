@@ -14,5 +14,8 @@ com/dmdev/entity/User.java
  com.dmdev.entity.User$UserBuilder
 com/dmdev/util/HibernateUtil.java
  com.dmdev.util.HibernateUtil
+com/dmdev/entity/Company.java
+ com.dmdev.entity.Company
+ com.dmdev.entity.Company$CompanyBuilder
 com/dmdev/HibernateRunner.java
  com.dmdev.HibernateRunner

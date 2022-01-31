@@ -32,55 +32,43 @@ public class HibernateRunner {
 
     public static void main(String[] args) {
 
+        Company company = Company.builder()
+                .name("Google")
+                .build();
+
+
         User user = User.builder()
                 .personalInfo(PersonalInfo.builder()
                         .firstname("Abdul")
                         .lastname("Edilov")
-                        .birthDate(new Birthday(LocalDate.of(1960,2,23)))
+                        .birthDate(new Birthday(LocalDate.of(1960, 2, 23)))
                         .build())
                 .username("edilov_as@mail.ru")
                 .role(Role.ADMIN)
                 .info("""
-                            {
-                                "name": "Abdul",
-                                "nick": "Tura"
-                            }
-                            """)
+                        {
+                            "name": "Abdul",
+                            "nick": "Tura"
+                        }
+                        """)
+                .company(company)
                 .build();
-        log.info("User entity is in transient static, object: {}", user);
 
 
         try (SessionFactory sessionFactory = HibernateUtil.buildSessionFactory()) {
             Session session1 = sessionFactory.openSession();
 
-            try(session1) {
+            try (session1) {
 
                 Transaction transaction = session1.beginTransaction();
-                log.trace("Transaction is created, {}", transaction);
 
-
-                session1.saveOrUpdate(user);
-                log.trace("User is in persistence state: {}, session {}", user, session1);
+                session1.save(company);
+                session1.save(user);
 
                 session1.getTransaction().commit();
             }
-            log.warn("User is in detached state: {}, session is closed {}", user, session1);
 
-            try (Session session2 = sessionFactory.openSession()) {
 
-                PersonalInfo key = PersonalInfo.builder()
-                        .firstname("Abdul")
-                        .lastname("Edilov")
-                        .birthDate(new Birthday(LocalDate.of(1960,2,23)))
-                        .build();
-
-                session2.get(User.class, key);
-            }
-
-        } catch (Exception exception) {
-            log.error("Exception occurred", exception);
-            throw exception;
         }
-
     }
 }

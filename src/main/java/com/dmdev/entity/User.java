@@ -24,12 +24,9 @@ import javax.persistence.*;
 public class User {
 
 
-
-    @EmbeddedId
-    @AttributeOverride(name = "birthDate", column = @Column(name = "birth_date"))
-    private PersonalInfo personalInfo;
-
-
+    @Id
+    @GeneratedValue(strategy = GenerationType.IDENTITY)
+    private Long id;
 
 
     @Column(unique = true)
@@ -38,10 +35,14 @@ public class User {
     @Enumerated(EnumType.STRING)
     private Role role;
 
+    @AttributeOverride(name = "birthDate", column = @Column(name = "birth_date"))
+    private PersonalInfo personalInfo;
+
+
     @Type(type = "dmdev")
     private String info;
 
-
-
-
+    @ManyToOne
+    @JoinColumn(name = "company_id")
+    private Company company;
 }

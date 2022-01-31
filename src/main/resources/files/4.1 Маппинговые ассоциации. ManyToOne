@@ -1,0 +1,69 @@
+4.1 Маппинговые ассоциации. ManyToOne
+
+Вот мы и дошли до маппинговых ассоциаций. Их всего 4:
+
+1. ManyToOne
+2. OneToMany
+3. OneToOne
+4. ManyToMany
+
+
+1. ManyToOne
+
+CREATE TABLE users(
+    id BIGSERIAL PRIMARY KEY,
+    username VARCHAR(128) UNIQUE,
+    firstname VARCHAR(128),
+    lastname VARCHAR(128),
+    birth_date DATE,
+    role VARCHAR(32),
+    info JSONB,
+    company_id INT REFERENCES company(id)
+);
+
+
+CREATE TABLE company (
+    id SERIAL PRIMARY KEY,
+    name VARCHAR(64) NOT NULL UNIQUE
+);
+
+Много пользователей может быть в одной компании.
+
+    @ManyToOne
+    @JoinColumn(name = "company_id")
+    private Company company;
+
+
+@JoinColumn(name = "company_id") -> в нашем случае необязательна, ведь по умолчанию он и берет company + _ + id (в
+сущности company у нас id и называется id).
+
+
+
+
+        Company company = Company.builder()
+                .name("Google")
+                .build();
+
+
+        User user = User.builder()
+                .personalInfo(PersonalInfo.builder()
+                        .firstname("Abdul")
+                        .lastname("Edilov")
+                        .birthDate(new Birthday(LocalDate.of(1960, 2, 23)))
+                        .build())
+                .username("edilov_as@mail.ru")
+                .role(Role.ADMIN)
+                .info("""
+                        {
+                            "name": "Abdul",
+                            "nick": "Tura"
+                        }
+                        """)
+                .company(company)
+                .build();
+
+
+
+Не забываем зарегистрировать нашу компанию в hibernate.cnf.xml или в HibernateUtil.
+
+
