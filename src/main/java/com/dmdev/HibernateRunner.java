@@ -63,7 +63,8 @@ public class HibernateRunner {
                 Transaction transaction = session1.beginTransaction();
 
 
-
+                session1.save(company);
+                session1.save(user);
 
                 session1.getTransaction().commit();
             }

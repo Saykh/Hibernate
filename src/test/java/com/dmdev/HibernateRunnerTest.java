@@ -95,8 +95,8 @@ class HibernateRunnerTest {
 
         session.beginTransaction();
 
-        var company = session.get(Company.class, 1);
-        System.out.println();
+        var company = session.get(Company.class, 2);
+                System.out.println(company.getUsers());
 
         session.getTransaction().commit();
 

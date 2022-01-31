@@ -1,5 +1,5 @@
-c[15:29:27,368] INFO [org.hibernate.Version: 44] HHH000412: Hibernate ORM core version 5.6.5.Final
-R[15:29:27,899] INFO [Hibernate Types: 298] This framework is proudly powered by:
+c[17:56:58,504] INFO [org.hibernate.Version: 44] HHH000412: Hibernate ORM core version 5.6.5.Final
+R[17:56:58,973] INFO [Hibernate Types: 298] This framework is proudly powered by:
 
 B>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>
 + _    _                           _     _
@@ -20,14 +20,14 @@
 3https://vladmihalcea.com/hypersistence-optimizer/
 B<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<
 
-}[15:29:28,055] INFO [org.hibernate.annotations.common.Version: 56] HCANN000001: Hibernate Commons Annotations {5.1.2.Final}
-‘[15:29:28,149] WARN [org.hibernate.orm.connections.pooling: 72] HHH10001002: Using Hibernate built-in connection pool (not for production use!)
-§[15:29:28,165] INFO [org.hibernate.orm.connections.pooling: 115] HHH10001005: using driver [org.postgresql.Driver] at URL [jdbc:postgresql://localhost:5433/postgres]
-…[15:29:28,165] INFO [org.hibernate.orm.connections.pooling: 124] HHH10001001: Connection properties: {password=****, user=postgres}
-f[15:29:28,165] INFO [org.hibernate.orm.connections.pooling: 129] HHH10001003: Autocommit mode: false
-¥[15:29:28,165] INFO [org.hibernate.engine.jdbc.connections.internal.DriverManagerConnectionProviderImpl: 274] HHH000115: Hibernate connection pool size: 20 (min=1)
-~[15:29:28,365] INFO [org.hibernate.dialect.Dialect: 175] HHH000400: Using dialect: org.hibernate.dialect.PostgreSQL10Dialect
-Û[15:29:29,024] INFO [org.hibernate.engine.transaction.jta.platform.internal.JtaPlatformInitiator: 52] HHH000490: Using JtaPlatform implementation: [org.hibernate.engine.transaction.jta.platform.internal.NoJtaPlatform]
+}[17:56:59,176] INFO [org.hibernate.annotations.common.Version: 56] HCANN000001: Hibernate Commons Annotations {5.1.2.Final}
+‘[17:56:59,270] WARN [org.hibernate.orm.connections.pooling: 72] HHH10001002: Using Hibernate built-in connection pool (not for production use!)
+§[17:56:59,285] INFO [org.hibernate.orm.connections.pooling: 115] HHH10001005: using driver [org.postgresql.Driver] at URL [jdbc:postgresql://localhost:5433/postgres]
+…[17:56:59,285] INFO [org.hibernate.orm.connections.pooling: 124] HHH10001001: Connection properties: {password=****, user=postgres}
+f[17:56:59,285] INFO [org.hibernate.orm.connections.pooling: 129] HHH10001003: Autocommit mode: false
+¥[17:56:59,285] INFO [org.hibernate.engine.jdbc.connections.internal.DriverManagerConnectionProviderImpl: 274] HHH000115: Hibernate connection pool size: 20 (min=1)
+~[17:56:59,474] INFO [org.hibernate.dialect.Dialect: 175] HHH000400: Using dialect: org.hibernate.dialect.PostgreSQL10Dialect
+Û[17:57:00,231] INFO [org.hibernate.engine.transaction.jta.platform.internal.JtaPlatformInitiator: 52] HHH000490: Using JtaPlatform implementation: [org.hibernate.engine.transaction.jta.platform.internal.NoJtaPlatform]
 Hibernate: 
     select
 #        company0_.id as id1_0_0_,
@@ -37,36 +37,3 @@
         company company0_ 
     where
         company0_.id=?
-Hibernate: 
-    select
-/        users0_.company_id as company_8_1_0_,
-!        users0_.id as id1_1_0_,
-!        users0_.id as id1_1_1_,
-/        users0_.company_id as company_8_1_1_,
-%        users0_.info as info2_1_1_,
-/        users0_.birth_date as birth_da3_1_1_,
-.        users0_.firstname as firstnam4_1_1_,
--        users0_.lastname as lastname5_1_1_,
-%        users0_.role as role6_1_1_,
--        users0_.username as username7_1_1_ 
-
-    from
-        users users0_ 
-    where
-        users0_.company_id=?
-
-Hibernate: 
-    delete 
-
-    from
-        users 
-    where
-        id=?
-Hibernate: 
-    delete 
-
-    from
-        company 
-    where
-        id=?
-—[15:29:29,231] INFO [org.hibernate.orm.connections.pooling: 502] HHH10001008: Cleaning up connection pool [jdbc:postgresql://localhost:5433/postgres]

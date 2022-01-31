@@ -1,0 +1,25 @@
+4.8 Persistent Collection
+
+Разберемся, как Hibernate работает с коллекциями и лениво их инициализирует.
+
+CollectionType (класс) -> работает под капотом в случае с ManyToMany, OneToMany.
+
+PersistenceSet, PersistenceMap, PersistenceList и т.д -> прокси объекты  коллекций. И до тех пор, пока мы не будем обр-ся
+к коллекции (в компании), она не будет проиниц-на. Есть и готовые методы для иниц-и из класса Hibernate, ранее мы
+использовали из него метод unproxy для получения реального объекта, так вот для инициализации есть метод initialize, в
+который мы можем передать коллекцию для инициализации, на практике же старайтесь избегать таких утилитных методов.
+
+Вот мы и видим PersistenceSet.
+   @Test
+    void oneToMany() {
+        @Cleanup var sessionFactory = HibernateUtil.buildSessionFactory();
+        @Cleanup var session = sessionFactory.openSession();
+
+        session.beginTransaction();
+
+        var company = session.get(Company.class, 2);
+                System.out.println(company.getUsers());
+
+        session.getTransaction().commit();
+
+    }
